@@ -8,6 +8,7 @@ import { TagsModule } from './modules/tags/tags.module';
 import { SearchModule } from './modules/search/search.module';
 import { FeedModule } from './modules/feed/feed.module';
 import { NotificationModule } from './modules/notification/notification.module';
+import { ModulesService } from './users/modules/modules.service';
 
 @Module({
   imports: [
@@ -22,6 +23,6 @@ import { NotificationModule } from './modules/notification/notification.module';
     NotificationModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [ModulesService],
 })
 export class AppModule {}
