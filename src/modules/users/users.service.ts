@@ -1,56 +1,112 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Prisma, User } from 'src/generated/prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { CreateUserDto } from './dto/create-user.dto';
+import { plainToInstance } from 'class-transformer';
+import { UserEntity } from './entities/user.entity';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async user(
-    userWhereUniqueInput: Prisma.UserWhereUniqueInput,
-  ): Promise<User | null> {
-    return this.prisma.user.findUnique({
-      where: userWhereUniqueInput,
+  async create(dto: CreateUserDto): Promise<User> {
+    const existingUser = await this.prisma.user.findFirst({
+      where: {
+        OR: [
+          { email: dto.email },
+          { username: dto.username },
+          ...(dto.githubId ? [{ githubId: dto.githubId }] : []),
+        ],
+      },
     });
+
+    if (existingUser) {
+      throw new ConflictException('User already exists');
+    }
+
+    const newUser = await this.prisma.user.create({
+      data: {
+        email: dto.email,
+        username: dto.username,
+        name: dto.name,
+        bio: dto.bio,
+        githubId: dto.githubId,
+        githubUrl: dto.githubUrl,
+      },
+    });
+
+    return this.toEntity(newUser);
   }
 
-  async users(params: {
-    skip?: number;
-    take?: number;
-    cursor?: Prisma.UserWhereUniqueInput;
-    where?: Prisma.UserWhereInput;
-    orderBy?: Prisma.UserOrderByWithRelationInput;
-  }): Promise<User[]> {
-    const { skip, take, cursor, where, orderBy } = params;
-    return this.prisma.user.findMany({
-      skip,
-      take,
-      cursor,
-      where,
-      orderBy,
+  async user(id: string): Promise<User | null> {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      include: {
+        _count: {
+          select: {
+            posts: true,
+            roasts: true,
+            followers: true,
+            following: true,
+          },
+        },
+      },
     });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return this.toEntity(user);
   }
 
-  async createUser(data: Prisma.UserCreateInput): Promise<User> {
-    return this.prisma.user.create({
-      data,
+  async userByUsername(username: string): Promise<User | null> {
+    const user = await this.prisma.user.findUnique({
+      where: { username },
+      include: {
+        _count: {
+          select: {
+            posts: true,
+            roasts: true,
+            followers: true,
+            following: true,
+          },
+        },
+      },
     });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return this.toEntity(user);
   }
 
-  async updateUser(params: {
-    where: Prisma.UserWhereUniqueInput;
-    data: Prisma.UserUpdateInput;
-  }): Promise<User> {
-    const { where, data } = params;
-    return this.prisma.user.update({
-      where,
-      data,
+  async update(id: string, dto: UpdateUserDto): Promise<UserEntity> {
+    const updatedUser = await this.prisma.user.update({
+      where: { id },
+      data: {
+        name: dto.name,
+        bio: dto.bio,
+        avatar: dto.avatar,
+      },
     });
+
+    return this.toEntity(updatedUser);
   }
 
   async deleteUser(where: Prisma.UserWhereUniqueInput): Promise<User> {
     return this.prisma.user.delete({
       where,
     });
+  }
+
+  private toEntity(user: User): UserEntity {
+    return plainToInstance(UserEntity, user);
   }
 }
