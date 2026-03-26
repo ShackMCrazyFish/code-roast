@@ -4,6 +4,7 @@ export class UserEntity {
   id: string;
   email: string;
   username: string;
+  passwordHash: string;
   name: string;
   avatar: string;
   githubUrl: string;

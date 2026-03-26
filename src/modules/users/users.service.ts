@@ -1,49 +1,33 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma, User } from 'src/generated/prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { plainToInstance } from 'class-transformer';
 import { UserEntity } from './entities/user.entity';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { hash } from 'bcrypt';
 
 @Injectable()
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(dto: CreateUserDto): Promise<User> {
-    const existingUser = await this.prisma.user.findFirst({
-      where: {
-        OR: [
-          { email: dto.email },
-          { username: dto.username },
-          ...(dto.githubId ? [{ githubId: dto.githubId }] : []),
-        ],
-      },
-    });
-
-    if (existingUser) {
-      throw new ConflictException('User already exists');
-    }
-
+  async create(dto: CreateUserDto): Promise<UserEntity> {
+    const passwordHash = await hash(dto.password, 10);
     const newUser = await this.prisma.user.create({
       data: {
-        email: dto.email,
         username: dto.username,
         name: dto.name,
-        bio: dto.bio,
-        githubId: dto.githubId,
-        githubUrl: dto.githubUrl,
+        email: dto.email,
+        passwordHash,
       },
     });
+
+    console.log(newUser);
 
     return this.toEntity(newUser);
   }
 
-  async user(id: string): Promise<User | null> {
+  async user(id: string): Promise<UserEntity> {
     const user = await this.prisma.user.findUnique({
       where: { id },
       include: {
@@ -65,7 +49,7 @@ export class UsersService {
     return this.toEntity(user);
   }
 
-  async userByUsername(username: string): Promise<User | null> {
+  async userByUsername(username: string): Promise<UserEntity | null> {
     const user = await this.prisma.user.findUnique({
       where: { username },
       include: {
@@ -78,6 +62,14 @@ export class UsersService {
           },
         },
       },
+    });
+
+    return user ? this.toEntity(user) : null;
+  }
+
+  async userByEmail(email: string): Promise<UserEntity> {
+    const user = await this.prisma.user.findUnique({
+      where: { email },
     });
 
     if (!user) {
@@ -100,10 +92,12 @@ export class UsersService {
     return this.toEntity(updatedUser);
   }
 
-  async deleteUser(where: Prisma.UserWhereUniqueInput): Promise<User> {
-    return this.prisma.user.delete({
+  async deleteUser(where: Prisma.UserWhereUniqueInput): Promise<UserEntity> {
+    const deletedUser = await this.prisma.user.delete({
       where,
     });
+
+    return this.toEntity(deletedUser);
   }
 
   private toEntity(user: User): UserEntity {

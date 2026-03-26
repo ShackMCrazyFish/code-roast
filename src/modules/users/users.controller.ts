@@ -1,12 +1,15 @@
-import { Body, Controller, Get, Param, Patch } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { UserResponseDto } from './dto/user-response.dto';
 import { plainToInstance } from 'class-transformer';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { CurrentUser } from 'src/common/decorators/current-user/current-user.decorator';
+import { UserEntity } from './entities/user.entity';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @ApiTags('Users')
+@UseGuards(JwtAuthGuard)
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
@@ -26,9 +29,7 @@ export class UsersController {
   @ApiOperation({ summary: 'Get a user by username' })
   @ApiResponse({ status: 200, description: 'The user', type: UserResponseDto })
   @ApiResponse({ status: 404, description: 'User not found' })
-  async findByUsername(
-    @Param('username') username: string,
-  ): Promise<UserResponseDto> {
+  async findByUsername(@Param('username') username: string): Promise<UserResponseDto> {
     const user = await this.usersService.userByUsername(username);
     return plainToInstance(UserResponseDto, user, {
       excludeExtraneousValues: true,
@@ -43,11 +44,8 @@ export class UsersController {
     type: UserResponseDto,
   })
   @ApiResponse({ status: 404, description: 'User not found' })
-  async updateMe(
-    @CurrentUser() user: UserEntity,
-    @Body() dto: UpdateUserDto,
-  ): Promise<UserResponseDto> {
-    const user = await this.usersService.updateMe(dto);
+  async updateMe(@CurrentUser() currentUser: UserEntity, @Body() dto: UpdateUserDto): Promise<UserResponseDto> {
+    const user = await this.usersService.update(currentUser.id, dto);
     return plainToInstance(UserResponseDto, user, {
       excludeExtraneousValues: true,
     });
