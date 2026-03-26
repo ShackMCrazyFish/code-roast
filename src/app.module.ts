@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { PostsModule } from './modules/posts/posts.module';
@@ -8,10 +9,11 @@ import { TagsModule } from './modules/tags/tags.module';
 import { SearchModule } from './modules/search/search.module';
 import { FeedModule } from './modules/feed/feed.module';
 import { NotificationModule } from './modules/notification/notification.module';
-import { ModulesService } from './users/modules/modules.service';
+import { PrismaService } from './prisma/prisma.service';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
     AuthModule,
     UsersModule,
     PostsModule,
@@ -23,6 +25,6 @@ import { ModulesService } from './users/modules/modules.service';
     NotificationModule,
   ],
   controllers: [],
-  providers: [ModulesService],
+  providers: [PrismaService],
 })
 export class AppModule {}
