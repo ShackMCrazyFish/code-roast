@@ -1,16 +1,19 @@
 import { Module } from '@nestjs/common';
-import { AuthModule } from './auth/auth.module';
-import { UsersModule } from './users/users.module';
-import { PostsModule } from './posts/posts.module';
-import { RoastsModule } from './roasts/roasts.module';
-import { CommentsModule } from './comments/comments.module';
-import { TagsModule } from './tags/tags.module';
-import { SearchModule } from './search/search.module';
-import { FeedModule } from './feed/feed.module';
-import { NotificationModule } from './notification/notification.module';
+import { ConfigModule } from '@nestjs/config';
+import { AuthModule } from './modules/auth/auth.module';
+import { UsersModule } from './modules/users/users.module';
+import { PostsModule } from './modules/posts/posts.module';
+import { RoastsModule } from './modules/roasts/roasts.module';
+import { CommentsModule } from './modules/comments/comments.module';
+import { TagsModule } from './modules/tags/tags.module';
+import { SearchModule } from './modules/search/search.module';
+import { FeedModule } from './modules/feed/feed.module';
+import { NotificationModule } from './modules/notification/notification.module';
+import { PrismaService } from './prisma/prisma.service';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
     AuthModule,
     UsersModule,
     PostsModule,
@@ -22,6 +25,6 @@ import { NotificationModule } from './notification/notification.module';
     NotificationModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [PrismaService],
 })
 export class AppModule {}
