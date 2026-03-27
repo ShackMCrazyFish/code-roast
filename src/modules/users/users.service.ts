@@ -1,56 +1,108 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma, User } from 'src/generated/prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { CreateUserDto } from './dto/create-user.dto';
+import { plainToInstance } from 'class-transformer';
+import { UserEntity } from './entities/user.entity';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { hash } from 'bcrypt';
 
 @Injectable()
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async user(
-    userWhereUniqueInput: Prisma.UserWhereUniqueInput,
-  ): Promise<User | null> {
-    return this.prisma.user.findUnique({
-      where: userWhereUniqueInput,
+  async create(dto: CreateUserDto): Promise<UserEntity> {
+    const passwordHash = await hash(dto.password, 10);
+    const newUser = await this.prisma.user.create({
+      data: {
+        username: dto.username,
+        name: dto.name,
+        email: dto.email,
+        passwordHash,
+      },
     });
+
+    console.log(newUser);
+
+    return this.toEntity(newUser);
   }
 
-  async users(params: {
-    skip?: number;
-    take?: number;
-    cursor?: Prisma.UserWhereUniqueInput;
-    where?: Prisma.UserWhereInput;
-    orderBy?: Prisma.UserOrderByWithRelationInput;
-  }): Promise<User[]> {
-    const { skip, take, cursor, where, orderBy } = params;
-    return this.prisma.user.findMany({
-      skip,
-      take,
-      cursor,
+  async user(id: string): Promise<UserEntity> {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      include: {
+        _count: {
+          select: {
+            posts: true,
+            roasts: true,
+            followers: true,
+            following: true,
+          },
+        },
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    console.log(user);
+
+    return this.toEntity(user);
+  }
+
+  async userByUsername(username: string): Promise<UserEntity | null> {
+    const user = await this.prisma.user.findUnique({
+      where: { username },
+      include: {
+        _count: {
+          select: {
+            posts: true,
+            roasts: true,
+            followers: true,
+            following: true,
+          },
+        },
+      },
+    });
+
+    return user ? this.toEntity(user) : null;
+  }
+
+  async userByEmail(email: string): Promise<UserEntity> {
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return this.toEntity(user);
+  }
+
+  async update(id: string, dto: UpdateUserDto): Promise<UserEntity> {
+    const updatedUser = await this.prisma.user.update({
+      where: { id },
+      data: {
+        name: dto.name,
+        bio: dto.bio,
+        avatar: dto.avatar,
+      },
+    });
+
+    return this.toEntity(updatedUser);
+  }
+
+  async deleteUser(where: Prisma.UserWhereUniqueInput): Promise<UserEntity> {
+    const deletedUser = await this.prisma.user.delete({
       where,
-      orderBy,
     });
+
+    return this.toEntity(deletedUser);
   }
 
-  async createUser(data: Prisma.UserCreateInput): Promise<User> {
-    return this.prisma.user.create({
-      data,
-    });
-  }
-
-  async updateUser(params: {
-    where: Prisma.UserWhereUniqueInput;
-    data: Prisma.UserUpdateInput;
-  }): Promise<User> {
-    const { where, data } = params;
-    return this.prisma.user.update({
-      where,
-      data,
-    });
-  }
-
-  async deleteUser(where: Prisma.UserWhereUniqueInput): Promise<User> {
-    return this.prisma.user.delete({
-      where,
-    });
+  private toEntity(user: User): UserEntity {
+    return plainToInstance(UserEntity, user);
   }
 }

@@ -10,10 +10,16 @@ import { SearchModule } from './modules/search/search.module';
 import { FeedModule } from './modules/feed/feed.module';
 import { NotificationModule } from './modules/notification/notification.module';
 import { PrismaService } from './prisma/prisma.service';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    JwtModule.register({
+      global: true,
+      secret: process.env.JWT_SECRET,
+      signOptions: { expiresIn: '1h' },
+    }),
     AuthModule,
     UsersModule,
     PostsModule,
