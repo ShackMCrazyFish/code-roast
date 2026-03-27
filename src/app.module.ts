@@ -8,18 +8,13 @@ import { TagsModule } from './modules/tags/tags.module';
 import { SearchModule } from './modules/search/search.module';
 import { FeedModule } from './modules/feed/feed.module';
 import { NotificationModule } from './modules/notification/notification.module';
-import { PrismaService } from './prisma/prisma.service';
-import { JwtModule } from '@nestjs/jwt';
+import { PrismaService } from './common/services/prisma/prisma.service';
 import { PostsModule } from './modules/posts/posts.module';
+import { OutboxService } from './common/services/outbox/outbox.service';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    JwtModule.register({
-      global: true,
-      secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: '1h' },
-    }),
     AuthModule,
     UsersModule,
     PostsModule,
@@ -31,6 +26,6 @@ import { PostsModule } from './modules/posts/posts.module';
     NotificationModule,
   ],
   controllers: [],
-  providers: [PrismaService],
+  providers: [PrismaService, OutboxService],
 })
 export class AppModule {}

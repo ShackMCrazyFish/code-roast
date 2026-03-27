@@ -32,7 +32,7 @@ CREATE TABLE "posts" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "description" TEXT,
-    "code" TEXT,
+    "code_snippet" TEXT,
     "github_url" TEXT,
     "language" TEXT NOT NULL,
     "lines_count" INTEGER NOT NULL DEFAULT 0,

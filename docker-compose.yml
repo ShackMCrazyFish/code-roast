@@ -22,10 +22,11 @@ services:
       - redis_data:/data
 
   elasticsearch:
-    image: elasticsearch:8.17.0
+    image: elasticsearch:9.3.2
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
+      
     ports:
       - "9200:9200"
     volumes:

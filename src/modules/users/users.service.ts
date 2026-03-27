@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma, User } from 'src/generated/prisma/client';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from 'src/common/services/prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { plainToInstance } from 'class-transformer';
 import { UserEntity } from './entities/user.entity';
@@ -21,8 +21,6 @@ export class UsersService {
         passwordHash,
       },
     });
-
-    console.log(newUser);
 
     return this.toEntity(newUser);
   }
@@ -45,8 +43,6 @@ export class UsersService {
     if (!user) {
       throw new NotFoundException('User not found');
     }
-
-    console.log(user);
 
     return this.toEntity(user);
   }
