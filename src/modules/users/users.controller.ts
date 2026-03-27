@@ -19,7 +19,7 @@ export class UsersController {
   @ApiResponse({ status: 200, description: 'The user', type: UserResponseDto })
   @ApiResponse({ status: 404, description: 'User not found' })
   async findOne(@Param('id') id: string): Promise<UserResponseDto> {
-    const user = await this.usersService.user(id);
+    const user = await this.usersService.findOne(id);
     return plainToInstance(UserResponseDto, user, {
       excludeExtraneousValues: true,
     });
@@ -30,7 +30,7 @@ export class UsersController {
   @ApiResponse({ status: 200, description: 'The user', type: UserResponseDto })
   @ApiResponse({ status: 404, description: 'User not found' })
   async findByUsername(@Param('username') username: string): Promise<UserResponseDto> {
-    const user = await this.usersService.userByUsername(username);
+    const user = await this.usersService.findByUsername(username);
     return plainToInstance(UserResponseDto, user, {
       excludeExtraneousValues: true,
     });
