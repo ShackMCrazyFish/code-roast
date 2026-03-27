@@ -27,7 +27,7 @@ export class UsersService {
     return this.toEntity(newUser);
   }
 
-  async user(id: string): Promise<UserEntity> {
+  async findOne(id: string): Promise<UserEntity> {
     const user = await this.prisma.user.findUnique({
       where: { id },
       include: {
@@ -51,7 +51,7 @@ export class UsersService {
     return this.toEntity(user);
   }
 
-  async userByUsername(username: string): Promise<UserEntity | null> {
+  async findByUsername(username: string): Promise<UserEntity | null> {
     const user = await this.prisma.user.findUnique({
       where: { username },
       include: {
@@ -69,7 +69,7 @@ export class UsersService {
     return user ? this.toEntity(user) : null;
   }
 
-  async userByEmail(email: string): Promise<UserEntity> {
+  async findByEmail(email: string): Promise<UserEntity> {
     const user = await this.prisma.user.findUnique({
       where: { email },
     });
@@ -94,7 +94,7 @@ export class UsersService {
     return this.toEntity(updatedUser);
   }
 
-  async deleteUser(where: Prisma.UserWhereUniqueInput): Promise<UserEntity> {
+  async delete(where: Prisma.UserWhereUniqueInput): Promise<UserEntity> {
     const deletedUser = await this.prisma.user.delete({
       where,
     });

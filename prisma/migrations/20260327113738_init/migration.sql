@@ -12,6 +12,7 @@ CREATE TABLE "users" (
     "id" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "username" TEXT NOT NULL,
+    "passwordHash" TEXT NOT NULL,
     "name" TEXT,
     "avatar" TEXT,
     "githubId" INTEGER,
