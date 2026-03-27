@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Expose, Transform } from 'class-transformer';
+import { Expose } from 'class-transformer';
 
 export class UserResponseDto {
   @ApiProperty({
@@ -56,7 +56,6 @@ export class UserResponseDto {
     example: '2021-01-01T00:00:00.000Z',
   })
   @Expose()
-  @Transform(({ value }: { value: Date }) => value.toISOString())
   createdAt: Date;
 
   @ApiProperty({
@@ -64,7 +63,6 @@ export class UserResponseDto {
     example: '2021-01-01T00:00:00.000Z',
   })
   @Expose()
-  @Transform(({ value }: { value: Date }) => value.toISOString())
   updatedAt: Date;
 
   @ApiProperty({
@@ -72,7 +70,6 @@ export class UserResponseDto {
     example: '2021-01-01T00:00:00.000Z',
   })
   @Expose()
-  @Transform(({ value }: { value: Date }) => value.toISOString())
   lastActiveAt: Date;
 
   @ApiProperty({

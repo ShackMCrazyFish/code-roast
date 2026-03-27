@@ -1,4 +1,4 @@
-import { Exclude, Transform } from 'class-transformer';
+import { Exclude } from 'class-transformer';
 
 export class UserEntity {
   id: string;
@@ -15,13 +15,8 @@ export class UserEntity {
   @Exclude()
   githubId: number;
 
-  @Transform(({ value }: { value: Date }) => value.toISOString())
   createdAt: Date;
-
-  @Transform(({ value }: { value: Date }) => value.toISOString())
   updatedAt: Date;
-
-  @Transform(({ value }: { value: Date }) => value.toISOString())
   lastActiveAt: Date;
 
   get isNewbie(): boolean {
