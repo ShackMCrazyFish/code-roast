@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from 'src/common/services/prisma/prisma.service';
 import { plainToInstance } from 'class-transformer';
 import { Post } from 'src/generated/prisma/client';
 import { PostEntity } from './entities/post.entity';
@@ -12,17 +12,26 @@ export class PostsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(user: UserEntity, dto: CreatePostDto): Promise<PostEntity> {
-    const newPost = await this.prisma.post.create({
-      data: {
-        title: dto.title,
-        description: dto.description,
-        code: dto.code,
-        language: dto.language,
-        authorId: user.id,
-      },
-    });
+    return this.prisma.$transaction(async (tx) => {
+      const newPost = await tx.post.create({
+        data: {
+          title: dto.title,
+          description: dto.description,
+          codeSnippet: dto.codeSnippet,
+          language: dto.language,
+          authorId: user.id,
+        },
+      });
 
-    return this.toEntity(newPost);
+      await tx.outboxEvent.create({
+        data: {
+          topic: 'POST_CREATED',
+          payload: { postId: newPost.id },
+        },
+      });
+
+      return this.toEntity(newPost);
+    });
   }
 
   async findAll(): Promise<PostEntity[]> {
@@ -51,26 +60,44 @@ export class PostsService {
   }
 
   async update(id: string, dto: UpdatePostDto): Promise<PostEntity> {
-    const updatedPost = await this.prisma.post.update({
-      where: { id },
-      data: {
-        title: dto.title,
-        description: dto.description,
-        code: dto.code,
-        language: dto.language,
-      },
+    return this.prisma.$transaction(async (tx) => {
+      const updatedPost = await this.prisma.post.update({
+        where: { id },
+        data: {
+          title: dto.title,
+          description: dto.description,
+          codeSnippet: dto.codeSnippet,
+          language: dto.language,
+        },
+      });
+
+      if (!updatedPost) {
+        throw new NotFoundException('Post not found');
+      }
+
+      await tx.outboxEvent.create({
+        data: {
+          topic: 'POST_UPDATED',
+          payload: { postId: updatedPost.id },
+        },
+      });
+
+      return this.toEntity(updatedPost);
     });
-
-    if (!updatedPost) {
-      throw new NotFoundException('Post not found');
-    }
-
-    return this.toEntity(updatedPost);
   }
 
   async remove(id: string): Promise<void> {
-    await this.prisma.post.delete({
-      where: { id },
+    await this.prisma.$transaction(async (tx) => {
+      await tx.outboxEvent.create({
+        data: {
+          topic: 'POST_DELETED',
+          payload: { postId: id },
+        },
+      });
+
+      await tx.post.delete({
+        where: { id },
+      });
     });
   }
 

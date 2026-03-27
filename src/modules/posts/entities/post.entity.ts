@@ -4,7 +4,7 @@ export class PostEntity {
   id: string;
   title: string;
   description?: string;
-  code: string;
+  codeSnippet: string;
   language: string;
   authorId: string;
   author: UserEntity;

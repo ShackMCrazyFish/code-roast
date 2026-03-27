@@ -29,7 +29,13 @@ export class PostResponseDto {
     example: 'console.log("Hello, world!");',
   })
   @Expose()
-  code: string;
+  codeSnippet: string;
+
+  @ApiProperty({
+    description: 'The language of the post',
+    example: 'javascript',
+  })
+  @Expose()
   language: string;
 
   @ApiProperty({
@@ -38,6 +44,7 @@ export class PostResponseDto {
   })
   @Expose()
   authorId: string;
+
   @ApiProperty({
     description: 'The author of the post',
     example: {

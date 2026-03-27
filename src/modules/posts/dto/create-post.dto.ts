@@ -7,7 +7,7 @@ export class CreatePostDto {
 
   @IsString()
   @IsNotEmpty()
-  code: string;
+  codeSnippet: string;
 
   @IsString()
   @IsNotEmpty()

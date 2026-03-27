@@ -84,7 +84,7 @@ model Post {
   id          String  @id @default(uuid())
   title       String
   description String? @db.Text
-  code        String? @db.Text
+  codeSnippet        String? @db.Text
   githubUrl   String? @map("github_url")
   language    String
   linesCount  Int     @default(0) @map("lines_count")
@@ -355,4 +355,14 @@ model UserAchievement {
 
   @@unique([userId, achievementId])
   @@map("user_achievements")
+}
+
+model OutboxEvent {
+  id String @id @default(uuid())
+  topic String // 'POST_CREATED', 'POST_UPDATED', 'POST_DELETED'
+  payload Json
+  processed Boolean @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([processed, createdAt])
 }
