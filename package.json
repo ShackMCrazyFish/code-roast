@@ -1,4 +1,13 @@
 {
+	"name": "code-roast",
+	"private": true,
+	"packageManager": "pnpm@10.32.1",
+	"scripts": {
+		"build": "turbo run build",
+		"dev": "turbo run dev",
+		"lint": "turbo run lint",
+		"test": "turbo run test"
+	},
 	"devDependencies": {
 		"turbo": "^2.8.20"
 	}
