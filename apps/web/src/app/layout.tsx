@@ -1,6 +1,14 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Figtree, Lora } from "next/font/google";
 import "./globals.css";
+import { cn } from "@/lib/utils";
+import { Header } from "@/components/layout/Header";
+import { Sidebar } from "@/components/layout/Sidebar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+
+const loraHeading = Lora({subsets:['latin'],variable:'--font-heading'});
+
+const figtree = Figtree({subsets:['latin'],variable:'--font-sans'});
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,9 +33,22 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={cn("h-full", "antialiased", geistSans.variable, geistMono.variable, "font-sans", figtree.variable, loraHeading.variable)}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <Header />
+        <div className="min-h-screen bg-gray-50 pt-16"> {/* pt-16 для фиксированного хедера */}
+          <div className="max-w-7xl mx-auto px-4 py-6 flex gap-6">
+          
+            {/* Основной контент */}
+            <main className="flex-1 min-w-0 space-y-4">
+              {children}
+            </main>
+            
+            <Sidebar />
+          </div>
+        </div>
+      </body>
     </html>
   );
 }

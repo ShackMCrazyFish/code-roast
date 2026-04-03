@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PrismaService } from 'apps/api/src/common/services/prisma/prisma.service';
-import { PostsService } from 'apps/api/src/modules/posts/posts.service';
+import { PrismaService } from '../../../common/services/prisma/prisma.service';
+import { PostsService } from '../../../modules/posts/posts.service';
 import { POST_SEARCH_INDEX } from '../consts/post-search.index';
-import { OutboxEvent } from 'apps/api/src/generated/prisma/client';
+import { OutboxEvent } from '../../../generated/prisma/client';
 import { Cron } from '@nestjs/schedule';
 import { ElasticsearchService } from '@nestjs/elasticsearch';
 
